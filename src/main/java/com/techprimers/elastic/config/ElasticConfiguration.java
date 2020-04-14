@@ -1,7 +1,11 @@
 package com.techprimers.elastic.config;
 
+import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.node.NodeBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -11,18 +15,17 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 @Configuration
 @EnableJpaRepositories(basePackages = "com.techprimers.elastic.jparepository")
 @EnableElasticsearchRepositories(basePackages = "com.techprimers.elastic.repository")
 public class ElasticConfiguration {
 
-    @Bean
-    public NodeBuilder nodeBuilder() {
-        return new NodeBuilder();
-    }
 
-    @Bean
+/*
+   @Bean
     public ElasticsearchOperations elasticsearchTemplate() throws IOException {
         File tmpDir = File.createTempFile("elastic", Long.toString(System.nanoTime()));
         System.out.println("Temp directory: " + tmpDir.getAbsolutePath());
@@ -42,5 +45,26 @@ public class ElasticConfiguration {
                 .settings(elasticsearchSettings.build())
                 .node()
                 .client());
+    }*/
+
+    @Bean
+    public NodeBuilder nodeBuilder() {
+        return new NodeBuilder();
     }
+
+
+    @Bean
+    public Client client() throws Exception {
+        Settings settings = Settings.settingsBuilder()
+                .put("cluster.name", "ghada2")
+                .put("client.transport.sniff", true).build();
+        TransportClient client = new TransportClient.Builder().settings(settings).build();
+        client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
+        return client;
+    }
+    @Bean
+    public ElasticsearchOperations elasticsearchTemplate() throws Exception {
+        return new ElasticsearchTemplate(client());
+    }
+
 }

@@ -28,7 +28,7 @@ public class Loaders {
     @Transactional
     public void loadAll(){
 
-        operations.putMapping(Users.class);
+       //operations.putMapping(Users.class);
         System.out.println("Loading Data");
         List<Users> data = getData();
         userJpaRepository.save(data); //saves to H2 DB
